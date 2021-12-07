@@ -42,8 +42,6 @@ http://store.docker.com
 
 docker version
 
-http://github.com/BretFisher/udemy-docker-mastery
-
 docker version
 
 docker container
@@ -64,7 +62,7 @@ curl -fsSL get.docker.com -o get-docker.sh
 
 sh get-docker.sh
 
-sudo usermod -aG docker bret
+sudo usermod -aG docker user
 
 sudo docker version
 
@@ -83,12 +81,6 @@ curl -L https://github.com/docker/compose/releases/download/1.15.0/docker-compos
 docker-compose version
 
 http://github.com/docker/machine/releases
-
-http://github.com/BretFisher/udemy-docker-mastery
-
-git clone https://github.com/Bretfisher/udemy-docker-mastery.git
-
-cd udemy-docker-mastery/
 
 docker image
 
