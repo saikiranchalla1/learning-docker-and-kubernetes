@@ -1,3 +1,70 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Introduction to Docker and Kubernetes](#introduction-to-docker-and-kubernetes)
+  - [Installing Docker: The Fast Way](#installing-docker-the-fast-way)
+    - [Installing on Windows 10 (Pro or Enterprise)](#installing-on-windows-10-pro-or-enterprise)
+    - [Installing on Windows 7, 8, or 10 Home Edition](#installing-on-windows-7-8-or-10-home-edition)
+      - [Important links for Windows](#important-links-for-windows)
+    - [Installing on Mac](#installing-on-mac)
+      - [Important Links for Mac](#important-links-for-mac)
+    - [Installing on Linux](#installing-on-linux)
+    - [Terminal Shell and Tab Completion for Docker CLI](#terminal-shell-and-tab-completion-for-docker-cli)
+      - [Windows PowerShell Tab Completion](#windows-powershell-tab-completion)
+      - [macOS Terminals](#macos-terminals)
+      - [macOS Bash Tab Completion](#macos-bash-tab-completion)
+      - [Linux](#linux)
+    - [What if None Of These Options Work](#what-if-none-of-these-options-work)
+  - [Docker Version Format Change](#docker-version-format-change)
+  - [Creating and using containers](#creating-and-using-containers)
+    - [Docker install and Config](#docker-install-and-config)
+    - [Starting a Nginx web server](#starting-a-nginx-web-server)
+      - [Image vs container](#image-vs-container)
+      - [What happens when we run a container?](#what-happens-when-we-run-a-container)
+    - [Container Vs Virtual Machine](#container-vs-virtual-machine)
+    - [Assignment: Manage Multiple Containers](#assignment-manage-multiple-containers)
+      - [Solution](#solution)
+    - [What's Going on in containers: CLI Process Monitoring](#whats-going-on-in-containers-cli-process-monitoring)
+    - [Getting a Shell inside containers: No Need for SSH](#getting-a-shell-inside-containers-no-need-for-ssh)
+    - [Docker Networks: Concepts](#docker-networks-concepts)
+      - [Docker Networks Defaults](#docker-networks-defaults)
+      - [Docker Networks: CLI Management](#docker-networks-cli-management)
+      - [Docker Networks: DNS](#docker-networks-dns)
+    - [Assignment: Using Containers for CLI Testing.](#assignment-using-containers-for-cli-testing)
+      - [Solution](#solution-1)
+    - [Bug in alpine affects nslookup](#bug-in-alpine-affects-nslookup)
+    - [Assignment: DNS Round Robin Testing](#assignment-dns-round-robin-testing)
+      - [Solution](#solution-2)
+  - [Container Images: Where to find them and how to build them](#container-images-where-to-find-them-and-how-to-build-them)
+    - [What's  In  An Image and What Isn't](#whats--in--an-image-and-what-isnt)
+    - [Image Creation  and Storage](#image-creation--and-storage)
+    - [Image Highlights](#image-highlights)
+    - [Image and Their Layers](#image-and-their-layers)
+    - [Image Tagging and Pushing to Docker Hub](#image-tagging-and-pushing-to-docker-hub)
+    - [Building Images: The Dockerfile Basics](#building-images-the-dockerfile-basics)
+    - [Building Images: Running Docker builds](#building-images-running-docker-builds)
+    - [Building IMages: Extending Official Images](#building-images-extending-official-images)
+    - [Assignment: Build your own Dockerfile and Run containers From it](#assignment-build-your-own-dockerfile-and-run-containers-from-it)
+      - [Solution:](#solution)
+    - [Using Prune to Keep Your Docker System Clean (YouTube)](#using-prune-to-keep-your-docker-system-clean-youtube)
+  - [Container Lifetime and Persistent Data: Volumes](#container-lifetime-and-persistent-data-volumes)
+    - [Persistent Data: Data Volumes](#persistent-data-data-volumes)
+    - [Shell Differences for Path Expansion](#shell-differences-for-path-expansion)
+    - [Persistent Data: Bind Mounting](#persistent-data-bind-mounting)
+  - [Making it easier with docker-compose.yml file](#making-it-easier-with-docker-composeyml-file)
+    - [Docker-compose.yml](#docker-composeyml)
+    - [Docker-compose CLI](#docker-compose-cli)
+    - [Assignment: Writing a Compose File](#assignment-writing-a-compose-file)
+      - [Solution:](#solution-1)
+    - [Assignment: Compose For On-The-Fly Image Building and Multi-Container Testing](#assignment-compose-for-on-the-fly-image-building-and-multi-container-testing)
+  - [Dockerfile](#dockerfile)
+  - [Compose File](#compose-file)
+  - [Start Containers, Configure Drupal](#start-containers-configure-drupal)
+      - [Solution:](#solution-2)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Introduction to Docker and Kubernetes
 ## Installing Docker: The Fast Way
 If you don't already have docker installed, Docker already has some great guides on how to do it. The rest of this Section is about how to setup Docker on your specific OS, but if you already know which OS you want to install on, here's the short-list for downloading it. The videos after this Lecture are walkthroughs of installing Docker, getting the GitHub repo, getting a code editor, and tweaking the command line if you want to. Feel free to skip any and all of this if you have at least docker version 17.06 and like your current setup :)
@@ -807,3 +874,294 @@ docker container run -d --name nginx2 -p 8080:80 nginx
 
 docker container exec -it nginx bash
 ```
+
+## Making it easier with docker-compose.yml file
+- Why: configure relationships between containers
+- Why: save our docker container run settings in easy-to-read file
+- Why: create one-liner developer environment startups
+- Comprised of 2 separate but related things
+1. YAML-formatted file that describes our solution options for:
+- containers
+- networks
+- volumes
+2. A CLI tool docker-compose used for local dev/test  automation with those YAML files
+
+### Docker-compose.yml
+- Compose YAML format has it's own versions: 1, 2, 2.1, 3, 3.1
+- YAML file can be used with docker-compose command for  local docker automation or..
+- With docker directly in production with Swarm (as of v1.13)
+- docker-compose --help
+- docker-compose.yml is default filename, but any can be  used with docker-compose -f
+
+```
+version: '3.1'  # if no version is specified then v1 is assumed. Recommend v2 minimum
+
+services:  # containers. same as docker run
+  servicename: # a friendly name. this is also DNS name inside network
+    image: # Optional if you use build:
+    command: # Optional, replace the default CMD specified by the image
+    environment: # Optional, same as -e in docker run
+    volumes: # Optional, same as -v in docker run
+  servicename2:
+
+volumes: # Optional, same as docker volume create
+
+networks: # Optional, same as docker network create
+
+```
+
+- Consider the following `docker-compose.yml` file:
+
+```
+version: '2'
+
+# same as 
+# docker run -p 80:4000 -v $(pwd):/site bretfisher/jekyll-serve
+
+services:
+  jekyll:
+    image: bretfisher/jekyll-serve
+    volumes:
+      - .:/site
+    ports:
+      - '80:4000'
+
+
+
+```
+
+- A little more complicated example for Wordpress:
+
+```
+version: '2'
+
+services:
+
+  wordpress:
+    image: wordpress
+    ports:
+      - 8080:80
+    environment:
+      WORDPRESS_DB_HOST: mysql
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: example
+      WORDPRESS_DB_PASSWORD: examplePW
+    volumes:
+      - ./wordpress-data:/var/www/html
+
+  mysql:
+    # we sue mariadb here for arm support
+    # mariadb is a fork of MySQL that's often faster and better multi-platform
+    image: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: examplerootPW
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: example
+      MYSQL_PASSWORD: examplePW
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data:
+
+
+```
+
+- A much more complicated compose file:
+```
+version: '3'
+# NOTE: This example only works on x86_64 (amd64)
+# Percona doesn't yet publish arm64 (Apple Silicon M1) or arm/v7 (Raspberry Pi 32-bit) images
+
+services:
+  ghost:
+    image: ghost
+    ports:
+      - "80:2368"
+    environment:
+      - URL=http://localhost
+      - NODE_ENV=production
+      - MYSQL_HOST=mysql-primary
+      - MYSQL_PASSWORD=mypass
+      - MYSQL_DATABASE=ghost
+    volumes:
+      - ./config.js:/var/lib/ghost/config.js
+    depends_on:
+      - mysql-primary
+      - mysql-secondary
+  proxysql:
+    # image only works on x86_64 (amd64)
+    image: percona/proxysql
+    environment: 
+      - CLUSTER_NAME=mycluster
+      - CLUSTER_JOIN=mysql-primary,mysql-secondary
+      - MYSQL_ROOT_PASSWORD=mypass
+   
+      - MYSQL_PROXY_USER=proxyuser
+      - MYSQL_PROXY_PASSWORD=s3cret
+  mysql-primary:
+    # image only works on x86_64 (amd64)
+    image: percona/percona-xtradb-cluster:5.7
+    environment: 
+      - CLUSTER_NAME=mycluster
+      - MYSQL_ROOT_PASSWORD=mypass
+      - MYSQL_DATABASE=ghost
+      - MYSQL_PROXY_USER=proxyuser
+      - MYSQL_PROXY_PASSWORD=s3cret
+  mysql-secondary:
+    # image only works on x86_64 (amd64)
+    image: percona/percona-xtradb-cluster:5.7
+    environment: 
+      - CLUSTER_NAME=mycluster
+      - MYSQL_ROOT_PASSWORD=mypass
+   
+      - CLUSTER_JOIN=mysql-primary
+      - MYSQL_PROXY_USER=proxyuser
+      - MYSQL_PROXY_PASSWORD=s3cret
+    depends_on:
+      - mysql-primary
+
+```
+
+- Important links:
+  - https://yaml.org/start.html
+  - https://yaml.org/refcard.html
+  - https://docs.docker.com/compose/compose-file/compose-versioning/
+  - https://github.com/docker/compose/releases
+### Docker-compose CLI
+- CLI tool comes with Docker for Windows/Mac, but separate  download for Linux
+- Not a production-grade tool but ideal for local development and test
+- Two most common commands are
+- docker-compose up # setup volumes/networks and start all containers
+- docker-compose down # stop all containers and remove cont/vol/net
+- If all your projects had a Dockerfile and docker-compose.yml
+- then "new developer onboarding" would be:
+  - git clone github.com/some/software
+  - docker-compose up
+```
+docker-compose up
+
+docker-compose up -d
+
+docker-compose logs
+
+docker-compose --help
+
+docker-compose ps
+
+docker-compose top
+
+docker-compose down
+```
+
+- Important links:
+  - https://github.com/docker/compose/releases
+
+### Assignment: Writing a Compose File
+
+> Goal: Create a compose config for a local Drupal CMS website
+
+- This empty directory is where you should create a docker-compose.yml 
+- Use the `drupal:8.8.2` image along with the `postgres:12.1` image
+- Set the version to 2
+- Use `ports` to expose Drupal on 8080
+- Be sure to setup POSTGRES_PASSWORD on postgres image
+- Walk through Drupal config in browser at http://localhost:8080
+- Tip: Drupal assumes DB is localhost, but it will actually be on the compose service name you give it
+- Use Docker Hub documentation to figure out the right environment and volume settings
+- Extra Credit: Use volumes to store Drupal unique data
+
+
+#### Solution:
+```
+version: '2'
+
+services:
+  drupal:
+    image: drupal:8.8.2
+    ports:
+      - "8080:80"
+    volumes:
+      - drupal-modules:/var/www/html/modules
+      - drupal-profiles:/var/www/html/profiles       
+      - drupal-sites:/var/www/html/sites      
+      - drupal-themes:/var/www/html/themes
+  postgres:
+    image: postgres:12.1
+    environment:
+      - POSTGRES_PASSWORD=mypasswd
+
+volumes:
+  drupal-modules:
+  drupal-profiles:
+  drupal-sites:
+  drupal-themes:
+
+```
+
+
+### Assignment: Compose For On-The-Fly Image Building and Multi-Container Testing
+
+Goal: This time imagine you're just wanting to learn Drupal's admin and GUI, or maybe you're a software tester and you need to test a new theme for Drupal. When configured properly, this will let you build a custom image and start everything with `docker-compose up` including storing important db and config data in volumes so the site will remember your changes across Compose restarts.
+
+- Use the compose file you created in the last assignment (drupal and postgres) as a starting point.
+- Let's pin image version from Docker Hub this time. It's always a good idea to do that so a new major version doesn't surprise you.
+
+## Dockerfile
+- First you need to build a custom Dockerfile in this directory, `FROM drupal:8.8.2` NOTE: if it fails to build, try the latest 8 branch version with `FROM drupal:8`
+- Then RUN apt package manager command to install git: `apt-get update && apt-get install -y git`
+- Remember to cleanup after your apt install with `rm -rf /var/lib/apt/lists/*` and use `\` and `&&` properly. You can find examples of them in drupal official image. More on this below under Compose file.
+- Then change `WORKDIR /var/www/html/themes`
+- Then use git to clone the theme with: `RUN git clone --branch 8.x-3.x --single-branch --depth 1 https://git.drupalcode.org/project/bootstrap.git`
+- Combine that line with this line, as we need to change permissions on files and don't want to use another image layer to do that (it creates size bloat). This drupal container runs as www-data user but the build actually runs as root, so often we have to do things like `chown` to change file owners to the proper user: `chown -R www-data:www-data bootstrap`. Remember the first line needs a `\` at end to signify the next line is included in the command, and at start of next line you should have `&&` to signify "if first command succeeds then also run this command"
+- Then, just to be safe, change the working directory back to its default (from drupal image) at `/var/www/html`
+
+## Compose File
+- We're going to build a custom image in this compose file for drupal service. Use Compose file from previous assignment for Drupal to start with, and we'll add to it, as well as change image name.
+- Rename image to `custom-drupal` as we want to make a new image based on the official `drupal:8.8.2`.
+- We want to build the default Dockerfile in this directory by adding `build: .` to the `drupal` service. When we add a build + image value to a compose service, it knows to use the image name to write to in our image cache, rather then pull from Docker Hub.
+- For the `postgres:12.1` service, you need the same password as in previous assignment, but also add a volume for `drupal-data:/var/lib/postgresql/data` so the database will persist across Compose restarts.
+
+## Start Containers, Configure Drupal
+- Start containers like before, configure Drupal web install like before.
+- After website comes up, click on `Appearance` in top bar, and notice a new theme called `Bootstrap` is there. That's the one we added with our custom Dockerfile.
+- Click `Install and set as default`. Then click `Back to site` (in top left) and the website interface should look different. You've successfully installed and activated a new theme in your own custom image without installing anything on your host other than Docker!
+- If you exit (ctrl-c) and then `docker-compose down` it will delete containers, but not the volumes, so on next `docker-compose up` everything will be as it was.
+- To totally clean up volumes, add `-v` to `down` command.
+
+**rRequired dockerfile is in the `commands/compose-assignment-2` directory.**
+
+#### Solution:
+```
+version: '2'
+# NOTE: move this answer file up a directory so it'll work
+
+services:
+
+  drupal:
+    image: custom-drupal
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - drupal-modules:/var/www/html/modules
+      - drupal-profiles:/var/www/html/profiles       
+      - drupal-sites:/var/www/html/sites      
+      - drupal-themes:/var/www/html/themes
+ 
+  postgres:
+    image: postgres:12.1
+    environment:
+      - POSTGRES_PASSWORD=mypasswd
+    volumes:
+      - drupal-data:/var/lib/postgresql/data
+
+volumes:
+  drupal-data:
+  drupal-modules:
+  drupal-profiles:
+  drupal-sites:
+  drupal-themes:
+
+```
+
