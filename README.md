@@ -309,7 +309,7 @@ docker container inspect --format '{{ .NetworkSettings.IPAddress }}' webhost
 ```
 
 
-#### Docker Networks: CLI	Management
+#### Docker Networks: CLI Management
 - Show networks `docker network ls`
 - Inspect a network `docker network inspect`
 - Create a network `docker network create --driver`
@@ -427,7 +427,7 @@ docker container ls
 docker container rm -f TAB COMPLETION
 ```
 ## Container Images: Where to find them and how to build them
-### What's	In	An Image and What Isn't
+### What's  In  An Image and What Isn't
 - App binaries and dependencies
 - Metadata about the image data and how to run the image
 - Official definition: "An Image is an ordered collection of root  filesystem changes and the corresponding execution  parameters for use within a container runtime."
@@ -436,7 +436,7 @@ docker container rm -f TAB COMPLETION
 - Big as a Ubuntu distro with apt, and Apache, PHP, and more  installed
 
 ![](imgs/container-images.png)
-### Image Creation	and Storage
+### Image Creation  and Storage
 - Created Using a Dockerfile
 - Or committing a containers changes back to an image
 - Stored in Docker Engine image cache
@@ -526,4 +526,284 @@ docker image ls
 docker image push saikiranchalla/nginx:testing
 
 docker image ls
+```
+
+
+### Building Images: The Dockerfile Basics
+- Consider the following Dockerfile from the commands/dockerfile-sample-1 directory of this repository:
+
+
+```
+
+# NOTE: this example is taken from the default Dockerfile for the official nginx Docker Hub Repo
+# https://hub.docker.com/_/nginx/
+# NOTE: This file is slightly different than the video, because nginx versions have been updated
+#       to match the latest standards from docker hub... but it's doing the same thing as the video
+#       describes
+FROM debian:stretch-slim
+# all images must have a FROM
+# usually from a minimal Linux distribution like debian or (even better) alpine
+# if you truly want to start with an empty container, use FROM scratch
+
+ENV NGINX_VERSION 1.13.6-1~stretch
+ENV NJS_VERSION   1.13.6.0.1.14-1~stretch
+# optional environment variable that's used in later lines and set as envvar when container is running
+
+RUN apt-get update \
+  && apt-get install --no-install-recommends --no-install-suggests -y gnupg1 \
+  && \
+  NGINX_GPGKEY=573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62; \
+  found=''; \
+  for server in \
+    ha.pool.sks-keyservers.net \
+    hkp://keyserver.ubuntu.com:80 \
+    hkp://p80.pool.sks-keyservers.net:80 \
+    pgp.mit.edu \
+  ; do \
+    echo "Fetching GPG key $NGINX_GPGKEY from $server"; \
+    apt-key adv --keyserver "$server" --keyserver-options timeout=10 --recv-keys "$NGINX_GPGKEY" && found=yes && break; \
+  done; \
+  test -z "$found" && echo >&2 "error: failed to fetch GPG key $NGINX_GPGKEY" && exit 1; \
+  apt-get remove --purge -y gnupg1 && apt-get -y --purge autoremove && rm -rf /var/lib/apt/lists/* \
+  && echo "deb http://nginx.org/packages/mainline/debian/ stretch nginx" >> /etc/apt/sources.list \
+  && apt-get update \
+  && apt-get install --no-install-recommends --no-install-suggests -y \
+            nginx=${NGINX_VERSION} \
+            nginx-module-xslt=${NGINX_VERSION} \
+            nginx-module-geoip=${NGINX_VERSION} \
+            nginx-module-image-filter=${NGINX_VERSION} \
+            nginx-module-njs=${NJS_VERSION} \
+            gettext-base \
+  && rm -rf /var/lib/apt/lists/*
+# optional commands to run at shell inside container at build time
+# this one adds package repo for nginx from nginx.org and installs it
+
+RUN ln -sf /dev/stdout /var/log/nginx/access.log \
+  && ln -sf /dev/stderr /var/log/nginx/error.log
+# forward request and error logs to docker log collector
+
+EXPOSE 80 443
+# expose these ports on the docker virtual network
+# you still need to use -p or -P to open/forward these ports on host
+
+CMD ["nginx", "-g", "daemon off;"]
+# required: run this command when container is launched
+# only one CMD allowed, so if there are multiple, last one wins
+
+```
+
+### Building Images: Running Docker builds
+```
+docker image build -t customnginx .
+
+docker image ls
+
+docker image build -t customnginx .
+```
+
+### Building IMages: Extending Official Images
+- Let's extend an existing official Docker image.
+
+```
+# this shows how we can extend/change an existing official image from Docker Hub
+
+FROM nginx:latest
+# highly recommend you always pin versions for anything beyond dev/learn
+
+WORKDIR /usr/share/nginx/html
+# change working directory to root of nginx webhost
+# using WORKDIR is preferred to using 'RUN cd /some/path'
+
+COPY index.html index.html
+
+# I don't have to specify EXPOSE or CMD because they're in my FROM
+
+```
+
+
+- We can build it using the commands below:
+
+```
+docker container run -p 80:80 --rm nginx
+
+docker image build -t nginx-with-html .
+
+docker container run -p 80:80 --rm nginx-with-html
+
+docker image ls
+
+docker image tag --help
+
+docker image tag nginx-with-html:latest saikiranchalla/nginx-with-html:latest
+
+docker image ls
+
+docker push
+```
+
+### Assignment: Build your own Dockerfile and Run containers From it
+- Dockerfiles are part process workflow and part art
+- Take existing Node.js app and Dockerize it
+- Make Dockerfile. Build it. Test it. Push it. (rm it). Run it.
+- Expect this to be iterative. Rarely do I get it right the first time.
+- Details in dockerfile-assignment-1/Dockerfile
+- Use the Alpine version of the official 'node' 6.x image
+- Expected result is web site at http://localhost
+- Tag and push to your Docker Hub account (free)
+- Remove your image from local cache, run again from Hub
+
+
+#### Solution:
+```
+cd commands/dockerfile-assignment-1
+
+vim Dockerfile
+
+docker build cmd
+
+docker build -t testnode .
+
+docker container run --rm -p 80:3000 testnode
+
+docker images
+
+docker tag --help
+
+docker tag testnode saikiranchalla/testing-node
+
+docker push --help
+
+docker push saikiranchalla/testing-node
+
+docker image ls
+
+docker image rm saikiranchalla/testing-node
+
+docker container run --rm -p 80:3000 saikiranchalla/testing-node
+```
+
+
+### Using Prune to Keep Your Docker System Clean (YouTube)
+You can use "prune" commands to clean up images, volumes, build cache, and containers. Examples include:
+
+- docker image prune to clean up just "dangling" images
+
+- docker system prune will clean up everything
+
+- The big one is usually docker image prune -a which will remove all images you're not using. Use docker system df to see space usage.
+
+Remember each one of those commands has options you can learn with --help.
+
+## Container Lifetime and Persistent Data: Volumes
+- Important Links:
+  - https://www.oreilly.com/radar/an-introduction-to-immutable-infrastructure/
+  - https://12factor.net/
+  - https://medium.com/@kelseyhightower/12-fractured-apps-1080c73d481c#.cjvkgw4b3
+  - https://docs.docker.com/storage/
+- Containers are usually immutable and ephemeral
+- "immutable infrastructure": only re-deploy containers, never change
+- This is the ideal scenario, but what about databases, or unique  data?
+- Docker gives us features to ensure these "separation of concerns"
+- This is known as "persistent data"
+- Two ways: Volumes and Bind Mounts
+- Volumes: make special location outside of container UFS
+- Bind Mounts: link container path to host path
+
+### Persistent Data: Data Volumes
+- VOLUME command in Dockerfile
+- Also override with docker run -v /path/in/container
+- Bypasses Union File System and stores in alt location on host
+- Includes it's own management commands under docker
+- Connect to none, one, or multiple containers at once
+- Not subject to commit, save, or export commands
+- By default they only have a unique ID, but you can assign name
+- Then it's a "named volume"
+
+
+```
+docker pull mysql
+
+docker image inspect mysql
+
+docker container run -d --name mysql -e MYSQL_ALLOW_EMPTY_PASSWORD=True mysql
+
+docker container ls
+
+docker container inspect mysql
+
+docker volume ls
+
+docker volume inspect TAB COMPLETION
+
+docker container run -d --name2 mysql -e MYSQL_ALLOW_EMPTY_PASSWORD=True mysql
+
+docker volume ls
+
+docker container stop mysql
+
+docker container stop mysql2
+
+docker container ls
+
+docker container ls -a
+
+docker volume ls
+
+docker container rm mysql mysql2
+
+docker volume ls
+
+docker container run -d --name mysql -e MYSQL_ALLOW_EMPTY_PASSWORD=True -v mysql-db:/var/lib/mysql mysql
+
+docker volume ls
+
+docker volume inspect mysql-db
+
+docker container rm -f mysql
+
+docker container run -d --name mysql3 -e MYSQL_ALLOW_EMPTY_PASSWORD=True -v mysql-db:/var/lib/mysql mysql
+
+docker volume ls
+
+docker container inspect mysql3
+
+docker volume create --help
+```
+
+### Shell Differences for Path Expansion
+In the next lecture, you'll learn how to share files and directories between a host and a Docker container. One of the parts of the command line you'll need to type is the host file path you want to share.
+
+With Docker CLI, you can always use a full file path on any OS, but often you'll see me and others use a "parameter expansion" like $(pwd) which means "print working directory".
+
+Here's the important part. Each shell may do this differently, so here's a cheat sheet for which OS and Shell your using. I'll be using $(pwd) on a Mac, but yours may be different!
+
+This isn't a Docker thing, it's a Shell thing.
+
+For PowerShell use: ${pwd}
+
+For cmd.exe "Command Prompt use: %cd%
+
+Linux/macOS bash, sh, zsh, and Windows Docker Toolbox Quickstart Terminal use: $(pwd)
+
+Note, if you have spaces in your path, you'll usually need to quote the whole path in the docker command.
+
+### Persistent Data: Bind Mounting
+- Maps a host file or directory to a container file or directory
+- Basically just two locations pointing to the same file(s)
+- Again, skips UFS, and host files overwrite any in container
+- Can't use in Dockerfile, must be at container run
+  - ... run -v /Users/bret/stuff:/path/container (mac/linux)
+  - ...//c/Users/bret/stuff:/path/container (windows)
+
+
+```
+cd dockerfile-sample-2
+
+pcat Dockerfile
+
+docker container run -d --name nginx -p 80:80 -v $(pwd):/usr/share/nginx/html nginx
+
+docker container run -d --name nginx2 -p 8080:80 nginx
+
+docker container exec -it nginx bash
 ```
