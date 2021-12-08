@@ -1,70 +1,3 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
-
-- [Introduction to Docker and Kubernetes](#introduction-to-docker-and-kubernetes)
-  - [Installing Docker: The Fast Way](#installing-docker-the-fast-way)
-    - [Installing on Windows 10 (Pro or Enterprise)](#installing-on-windows-10-pro-or-enterprise)
-    - [Installing on Windows 7, 8, or 10 Home Edition](#installing-on-windows-7-8-or-10-home-edition)
-      - [Important links for Windows](#important-links-for-windows)
-    - [Installing on Mac](#installing-on-mac)
-      - [Important Links for Mac](#important-links-for-mac)
-    - [Installing on Linux](#installing-on-linux)
-    - [Terminal Shell and Tab Completion for Docker CLI](#terminal-shell-and-tab-completion-for-docker-cli)
-      - [Windows PowerShell Tab Completion](#windows-powershell-tab-completion)
-      - [macOS Terminals](#macos-terminals)
-      - [macOS Bash Tab Completion](#macos-bash-tab-completion)
-      - [Linux](#linux)
-    - [What if None Of These Options Work](#what-if-none-of-these-options-work)
-  - [Docker Version Format Change](#docker-version-format-change)
-  - [Creating and using containers](#creating-and-using-containers)
-    - [Docker install and Config](#docker-install-and-config)
-    - [Starting a Nginx web server](#starting-a-nginx-web-server)
-      - [Image vs container](#image-vs-container)
-      - [What happens when we run a container?](#what-happens-when-we-run-a-container)
-    - [Container Vs Virtual Machine](#container-vs-virtual-machine)
-    - [Assignment: Manage Multiple Containers](#assignment-manage-multiple-containers)
-      - [Solution](#solution)
-    - [What's Going on in containers: CLI Process Monitoring](#whats-going-on-in-containers-cli-process-monitoring)
-    - [Getting a Shell inside containers: No Need for SSH](#getting-a-shell-inside-containers-no-need-for-ssh)
-    - [Docker Networks: Concepts](#docker-networks-concepts)
-      - [Docker Networks Defaults](#docker-networks-defaults)
-      - [Docker Networks: CLI Management](#docker-networks-cli-management)
-      - [Docker Networks: DNS](#docker-networks-dns)
-    - [Assignment: Using Containers for CLI Testing.](#assignment-using-containers-for-cli-testing)
-      - [Solution](#solution-1)
-    - [Bug in alpine affects nslookup](#bug-in-alpine-affects-nslookup)
-    - [Assignment: DNS Round Robin Testing](#assignment-dns-round-robin-testing)
-      - [Solution](#solution-2)
-  - [Container Images: Where to find them and how to build them](#container-images-where-to-find-them-and-how-to-build-them)
-    - [What's  In  An Image and What Isn't](#whats--in--an-image-and-what-isnt)
-    - [Image Creation  and Storage](#image-creation--and-storage)
-    - [Image Highlights](#image-highlights)
-    - [Image and Their Layers](#image-and-their-layers)
-    - [Image Tagging and Pushing to Docker Hub](#image-tagging-and-pushing-to-docker-hub)
-    - [Building Images: The Dockerfile Basics](#building-images-the-dockerfile-basics)
-    - [Building Images: Running Docker builds](#building-images-running-docker-builds)
-    - [Building IMages: Extending Official Images](#building-images-extending-official-images)
-    - [Assignment: Build your own Dockerfile and Run containers From it](#assignment-build-your-own-dockerfile-and-run-containers-from-it)
-      - [Solution:](#solution)
-    - [Using Prune to Keep Your Docker System Clean (YouTube)](#using-prune-to-keep-your-docker-system-clean-youtube)
-  - [Container Lifetime and Persistent Data: Volumes](#container-lifetime-and-persistent-data-volumes)
-    - [Persistent Data: Data Volumes](#persistent-data-data-volumes)
-    - [Shell Differences for Path Expansion](#shell-differences-for-path-expansion)
-    - [Persistent Data: Bind Mounting](#persistent-data-bind-mounting)
-  - [Making it easier with docker-compose.yml file](#making-it-easier-with-docker-composeyml-file)
-    - [Docker-compose.yml](#docker-composeyml)
-    - [Docker-compose CLI](#docker-compose-cli)
-    - [Assignment: Writing a Compose File](#assignment-writing-a-compose-file)
-      - [Solution:](#solution-1)
-    - [Assignment: Compose For On-The-Fly Image Building and Multi-Container Testing](#assignment-compose-for-on-the-fly-image-building-and-multi-container-testing)
-  - [Dockerfile](#dockerfile)
-  - [Compose File](#compose-file)
-  - [Start Containers, Configure Drupal](#start-containers-configure-drupal)
-      - [Solution:](#solution-2)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 # Introduction to Docker and Kubernetes
 ## Installing Docker: The Fast Way
 If you don't already have docker installed, Docker already has some great guides on how to do it. The rest of this Section is about how to setup Docker on your specific OS, but if you already know which OS you want to install on, here's the short-list for downloading it. The videos after this Lecture are walkthroughs of installing Docker, getting the GitHub repo, getting a code editor, and tweaking the command line if you want to. Feel free to skip any and all of this if you have at least docker version 17.06 and like your current setup :)
@@ -1165,3 +1098,75 @@ volumes:
 
 ```
 
+## Container Registries: Image Storage and Distribution
+- An image registry needs to be part of your container plan
+- More Docker Hub details including auto-build
+- How Docker Store (store.docker.com) is different then Hub
+- How Docker Cloud (cloud.docker.com) is different then Hub
+- Install and use Docker Registry as private image store
+- 3rd Party registry options
+
+### Docker  Hub:  Digging Deeper
+- The most popular public image registry
+- It's really Docker Registry plus lightweight image building
+- Let's explore more of the features of Docker Hub
+- Link GitHub/BitBucket to Hub and auto-build images on  commit
+- Chain image building together
+
+
+### Run a Private Docker Registry
+```
+
+
+docker container run -d -p 5000:5000 --name registry registry
+
+docker container ls
+
+docker image ls
+
+docker pull hello-world
+
+docker run hello-world
+
+docker tag hello-world 127.0.0.1:5000/hello-world
+
+docker image ls
+
+docker push 127.0.0.1:5000/hello-world
+
+docker image remove hello-world
+
+docker image remove 127.0.0.1:5000/hello-world
+
+docker container rm admiring_stallman
+
+docker image remove 127.0.0.1:5000/hello-world
+
+docker image ls
+
+docker pull 127.0.0.1:5000/hello-world:latest
+
+docker container kill registry
+
+docker container rm registry
+
+docker container run -d -p 5000:5000 --name registry -v $(pwd)/registry-data:/var/lib/registry registry TAB COMPLETION
+
+docker image ls
+
+docker push 127.0.0.1:5000/hello-world
+```
+
+### Important Links:
+- https://docs.docker.com/registry/configuration/
+- https://docs.docker.com/registry/garbage-collection/
+- https://docs.docker.com/registry/recipes/mirror/
+
+### Third Party Image Registries
+Quay.io is a popular choice, and is very comparable to Docker Hub as a cloud-based image registry.  Sysdig did a [Docker Usage Report](https://sysdig.com/blog/sysdig-docker-usage-report-2017/) in April 2017 based off their users that shows Quay as the most popular cloud-based choice.
+
+If you're on [AWS](https://aws.amazon.com/ecr/), [Azure](https://azure.microsoft.com/en-us/services/container-registry/), or [Google Cloud](https://cloud.google.com/container-registry/), they all have their own registry options that are well integrated with their toolset.
+
+If you want a self-hosted option, there's Docker EE, Quay Enterprise, and also GitLab, which comes with GitLab Container Registry, among others.
+
+There's a much larger list of registries over at the [Awesome Docker list](https://github.com/veggiemonk/awesome-docker#hosting-images-registries).
