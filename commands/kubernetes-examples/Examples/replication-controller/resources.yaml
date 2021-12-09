@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  creationTimestamp: null
+  labels:
+    run: first-job
+  name: first-job
+spec:
+  template:
+    spec:
+      containers:
+      - image: ubuntu
+        name: first-job
+        command: ["expr","5","+","2"]
+        resources: {}
+
+      restartPolicy: Never
+      dnsPolicy: ClusterFirst
+status: {}
