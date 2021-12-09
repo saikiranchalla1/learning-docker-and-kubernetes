@@ -1,0 +1,53 @@
+    6  kubectl get nodes
+    7  kubectl get pods
+    8  kubectl create --help
+    9  kubectl run
+   10  kubectl run --help
+   11  clear
+   12  kubectl run nginx --image=nginx
+   13  kubectl get pods
+   14  kubectl get pods --help
+   15  kubectl get pods 
+   16  kubectl get namespaces
+   17  kubectl get services
+   18  kubectl get deployments
+   19  kubectl get all
+   20  kubectl get all -n kube-system
+   21  clear
+   22  kubectl get pods
+   23  kubectl delete nginx
+   24  kubectl delete pod nginx
+   25  kubectl get pods
+   26  kubectl create deployment nginx --image=nginx
+   27  kubectl get pods
+   28  kubectl delete pod nginx-f89759699-kwgcx
+   29  kubectl get pods
+   30  clear
+   31  kubectl get replicaset
+   32  kubectl get pods
+   33  kubectl delete deployment nginx
+   34  kubectl get deployments
+   35  kubectl create deployment nginx --image=nginx
+   36  kubectl edit deployment/nginx
+   37  kubectl get pods
+   38  kubect get replicaset
+   39  kubectl get replicaset
+   40  kubectl delete pods --all
+   41  kubectl get pods
+   42  kubectl delete deployment --all
+   43  clear
+   44  kubectl create deployment nginx --image=nginx
+   45  kubectl get pods
+   46  kubectl get pods -w
+   47  clear
+   48  kubectl describe pod nginx-f89759699-7ljx8
+   49  kubectl logs nginx-f89759699-7ljx8
+   50  kubectl logs nginx-f89759699-7ljx8 -f
+   51  kubectl create daemonset
+   52  kubectl create --help
+   53  kubectl get pods
+   54  kubectl exec -it nginx-f89759699-7ljx8 -- /bin/bash
+   55  kubectl delete deployment nginx
+   56  kubectl get pods
+   57  kubectl exec -it nginx-f89759699-7ljx8 /bin/bash
+   58  kubectl exec -it nginx-f89759699-7ljx8 -- /bin/bash
