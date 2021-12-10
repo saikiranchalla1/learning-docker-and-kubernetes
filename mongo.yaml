@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mongodb-configmap
+  namespace: training
 data:
   database_url: mongo
 ---
@@ -10,6 +11,7 @@ apiVersion: v1
 kind: Secret
 metadata: 
  name: mongo-secrets
+ namespace: training
 type: Opaque
 data:
  mongo-username: bW9uZ28K
@@ -21,6 +23,7 @@ metadata:
   labels:
     app: mongo
   name: mongo
+  namespace: training
 spec:
   replicas: 1
   selector:
@@ -35,6 +38,9 @@ spec:
       containers:
       - image: mongo
         name: mongo
+        volumeMounts:
+        - mountPath: /mongo-dir
+          name: my-mongo-volume
         ports:
         - containerPort: 27017
         env:
@@ -48,7 +54,11 @@ spec:
            secretKeyRef:
              name: mongo-secrets
              key: mongo-password
-
+      volumes:
+      - name: my-mongo-volume
+        hostPath:
+          path: /data
+          type: Directory
 ---
 apiVersion: v1
 kind: Service
@@ -57,6 +67,7 @@ metadata:
   labels:
     app: mongo
   name: mongo
+  namespace: training
 spec:
   ports:
   - port: 27017
@@ -113,6 +124,7 @@ metadata:
   labels:
     app: mongo-express
   name: mongo-express
+  namespace: training
 spec:
   ports:
   - port: 8081
@@ -121,3 +133,99 @@ spec:
   selector:
     app: mongo-express
   type: NodePort
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nginx-statefulset
+spec:
+  serviceName: "nginx-statefulset"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-statefulset
+  template:
+    metadata:
+      labels:
+        app: nginx-statefulset
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 200m
+            memory: 0.5Gi
+          limits:
+            cpu: 400m
+            memory: 1Gi
+
+---
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute-quota
+  namespace: training
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "2"
+    limits.memory: 2Gi
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: object-quota
+  namespace: training
+spec:
+  hard:
+    configmaps: "2"
+    secrets: "2"
+    services: "10"
+    #"service.loadbalancer": "2"
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 15
+          timeoutSeconds: 30
+          periodSeconds: 60
+          failureThreshold: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 15
+          timeoutSeconds: 30
+          periodSeconds: 60
+          failureThreshold: 10
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80
