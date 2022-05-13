@@ -339,7 +339,7 @@ ps aux
 
 #### Solution
 ```
-docker container run -d -p 3306:3306 --name db -e MYSQL_RANDOM_ROOT_PASSWORD=yes MYSQL_RANDOM_ROOT_PASSWORD
+docker container run -d -p 3306:3306 --name db -e MYSQL_RANDOM_ROOT_PASSWORD=yes mysql:latest
 
 docker container logs db
 
