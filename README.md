@@ -200,7 +200,12 @@ On Windows you'll likely want to use PowerShell terminal (PowerShell.exe) rather
 
 #### Windows PowerShell Tab Completion
 Tab completion lets you quickly fill the rest of a command or argument as you type by hitting Tab. To get "tab completion" in PowerShell, try the setup steps for "DockerCompletion" on GitHub.
-
+```
+# Install from PowerShell Gallery
+Install-Module DockerCompletion -Scope CurrentUser
+# Import
+Import-Module DockerCompletion
+```
 ####  macOS Terminals
 On Mac you can use the built in Terminal program which uses the default Bash shell. I prefer to use iTerm as my GUI terminal interface to gain more features than the built in one.
 
